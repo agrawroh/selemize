@@ -14,7 +14,11 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.agrawroh.selemize.exceptions.ExceptionFactory;
+import com.agrawroh.selemize.exceptions.ParserException;
+import com.agrawroh.selemize.model.ExceptionType;
 import com.agrawroh.selemize.utilities.Constants;
 
 /**
@@ -28,12 +32,16 @@ public class POIParser implements IParser {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(POIParser.class);
 
+    /********************************* Dependency Injections ********************************/
+    @Autowired
+    private ExceptionFactory exceptionFactory;
+
     /**
      * File Parser
      */
     @Override
     public List<List<?>> parse(String filePath, String fileName,
-            String sheetName) throws Exception {
+            String sheetName) throws ParserException {
         /* Call File Parser */
         return parse(new File(filePath + Constants.PTH_SEP + fileName),
                 sheetName);
@@ -44,7 +52,7 @@ public class POIParser implements IParser {
      */
     @Override
     public List<List<?>> parse(File completeFilePath, String sheetName)
-            throws Exception {
+            throws ParserException {
         LOGGER.info("Start Parsing File: " + completeFilePath);
 
         /* Get File Extension */
@@ -61,10 +69,10 @@ public class POIParser implements IParser {
      * @param completeFilePath
      * @param fileExtension
      * @param sheetName
-     * @throws Exception
+     * @throws ParserException
      */
     private List<List<?>> readExcel(File completeFilePath,
-            String fileExtension, String sheetName) throws Exception {
+            String fileExtension, String sheetName) throws ParserException {
         /* Open Workbook */
         Workbook workbook = getWorkbook(completeFilePath, fileExtension);
 
@@ -145,10 +153,10 @@ public class POIParser implements IParser {
      * @param completeFilePath
      * @param fileExtension
      * @return workbook
-     * @throws Exception
+     * @throws ParserException
      */
     private Workbook getWorkbook(File completeFilePath, String fileExtension)
-            throws Exception {
+            throws ParserException {
         /* Open & Read File */
         try (FileInputStream inputStream = new FileInputStream(completeFilePath)) {
             /* Get Type Based On File Extension */
@@ -159,7 +167,9 @@ public class POIParser implements IParser {
         } catch (Exception ex) {
             /* Catch, Log & Throw Exception */
             LOGGER.error("Error Occured While Parsing File!", ex);
-            throw ex;
+            throw new ParserException(exceptionFactory.create(
+                    ExceptionType.PARSER, "M001", ex,
+                    completeFilePath.getAbsolutePath()));
         }
     }
 }

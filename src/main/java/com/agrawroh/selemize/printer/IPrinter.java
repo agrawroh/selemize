@@ -15,4 +15,11 @@ public interface IPrinter {
      * @param fileContents
      */
     void prettyPrint(List<List<?>> fileContents, CharSequence seperator);
+
+    /**
+     * Print Verbose
+     * 
+     * @param fileContents
+     */
+    void verbose(List<List<?>> fileContents);
 }

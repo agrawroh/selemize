@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.StringUtils;
 
+import com.agrawroh.selemize.exceptions.ExceptionFactory;
 import com.agrawroh.selemize.parser.IParser;
 import com.agrawroh.selemize.parser.POIParser;
 import com.agrawroh.selemize.printer.DefaultPrinter;
@@ -65,13 +66,18 @@ public class DefaultLauncher {
             sheetName = 3 == arguments.length ? arguments[2] : null;
         }
 
+        ExceptionFactory exceptionFactory = getAppContext().getBean(
+                ExceptionFactory.class);
+        exceptionFactory.loadExceptionCodes();
+
         /* Detect & Parse File */
         IParser parser = (IParser) getAppContext().getBean(POIParser.class);
         List<List<?>> fileContents = parser
                 .parse(fileName, filePath, sheetName);
 
         /* Print File Contents */
-        IPrinter printer = (IPrinter) getAppContext().getBean(DefaultPrinter.class);
+        IPrinter printer = (IPrinter) getAppContext().getBean(
+                DefaultPrinter.class);
         printer.prettyPrint(fileContents, Constants.SYM_SEP);
     }
 

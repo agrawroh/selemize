@@ -7,6 +7,8 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.agrawroh.selemize.utilities.Constants;
+
 /**
  * Default Printer
  * 
@@ -41,6 +43,41 @@ public class DefaultPrinter implements IPrinter {
         }
     }
 
+    /**
+     * Pretty Verbose
+     * 
+     * @param fileContents
+     */
+    @Override
+    public void verbose(List<List<?>> fileContents) {
+        /* Print File Content */
+        for (final List<?> rowContent : fileContents) {
+            /* Access Row Data */
+            StringBuilder rowOutput = new StringBuilder();
+            for (final Object columnContent : rowContent) {
+                /* Check Whether Cell */
+                if (columnContent instanceof Cell) {
+                    /* Access Column Data */
+                    Cell currentCell = (Cell) columnContent;
+                    rowOutput.append("Position: ").append("[")
+                            .append(currentCell.getRowIndex())
+                            .append(Constants.SYM_SEP)
+                            .append(currentCell.getRowIndex()).append("]")
+                            .append(Constants.BAR_SEP).append("Data: ")
+                            .append(getData(columnContent))
+                            .append(Constants.SYM_NWL);
+                } else {
+                    /* Access Column Data */
+                    rowOutput.append((String) columnContent).append(
+                            Constants.SYM_SEP);
+                }
+            }
+
+            /* Print Row Data */
+            LOGGER.info(rowOutput.toString());
+        }
+    }
+
     //TODO : Move to separate class
     private String getData(Object columnContent) {
         if (columnContent instanceof Cell) {
@@ -51,6 +88,7 @@ public class DefaultPrinter implements IPrinter {
             return (String) columnContent;
         }
 
+        /* Empty String */
         return new String();
     }
 

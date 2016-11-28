@@ -3,6 +3,8 @@ package com.agrawroh.selemize.parser;
 import java.io.File;
 import java.util.List;
 
+import com.agrawroh.selemize.exceptions.ParserException;
+
 /**
  * Parser Interface
  * 
@@ -20,7 +22,7 @@ public interface IParser {
      * @throws Exception
      */
     List<List<?>> parse(String filePath, String fileName, String sheetName)
-            throws Exception;
+            throws ParserException;
 
     /**
      * Parse File
@@ -32,5 +34,5 @@ public interface IParser {
      * @throws Exception
      */
     List<List<?>> parse(File completeFilePath, String sheetName)
-            throws Exception;
+            throws ParserException;
 }
