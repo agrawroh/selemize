@@ -53,6 +53,17 @@ public class POIParser implements IParser {
     @Override
     public List<List<?>> parse(File completeFilePath, String sheetName)
             throws ParserException {
+        /* Call File Parser */
+        return parse(completeFilePath, sheetName, 0, 0, -1, -1);
+    }
+
+    /**
+     * File Parser
+     */
+    @Override
+    public List<List<?>> parse(File completeFilePath, String sheetName,
+            int rowStart, int columnStart, int rowEnd, int columnEnd)
+            throws ParserException {
         LOGGER.info("Start Parsing File: " + completeFilePath);
 
         /* Get File Extension */
@@ -60,7 +71,9 @@ public class POIParser implements IParser {
                 completeFilePath.getName().indexOf(Constants.SYM_DOT));
 
         /* Get & Return File Contents */
-        return readExcel(completeFilePath, fileExtension, sheetName);
+        return readExcel(completeFilePath, fileExtension, sheetName,
+                0 > rowStart ? 0 : rowStart, 0 > columnStart ? 0 : columnStart,
+                rowEnd, columnEnd);
     }
 
     /**
@@ -72,7 +85,8 @@ public class POIParser implements IParser {
      * @throws ParserException
      */
     private List<List<?>> readExcel(File completeFilePath,
-            String fileExtension, String sheetName) throws ParserException {
+            String fileExtension, String sheetName, int rowStart,
+            int columnStart, int rowEnd, int columnEnd) throws ParserException {
         /* Open Workbook */
         Workbook workbook = getWorkbook(completeFilePath, fileExtension);
 
@@ -103,19 +117,42 @@ public class POIParser implements IParser {
         LOGGER.info("Sheet Opened With {} Rows.", rowCount);
 
         /* Read Data */
-        return getData(sheet, rowCount);
+        return getData(sheet, rowStart, columnStart, 0 > rowEnd ? rowCount - 1
+                : rowEnd, columnEnd, rowCount);
     }
 
-    private List<List<?>> getData(Sheet sheet, int rowCount) {
+    /**
+     * Get Data
+     * 
+     * @param sheet
+     * @param rowStart
+     * @param columnStart
+     * @param rowEnd
+     * @param columnEnd
+     * @param rowCount
+     * @return List<List<?>>
+     * @throws ParserException
+     */
+    private List<List<?>> getData(Sheet sheet, int rowStart, int columnStart,
+            int rowEnd, int columnEnd, int rowCount) throws ParserException {
         List<List<?>> fileContents = new ArrayList<>();
 
+        /* Check Boundary */
+        if (rowEnd > rowCount - 1) {
+            /* Throw Exception */
+            LOGGER.error("Row End Exceeds Available Data!");
+            throw new ParserException(exceptionFactory.create(
+                    ExceptionType.PARSER, "PAR001"));
+        }
+
         /* Get Rows */
-        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        for (int rowIndex = rowStart; rowIndex <= rowEnd; rowIndex++) {
             /* Read Row */
             Row row = sheet.getRow(rowIndex);
 
             /* Get Cell Data */
-            List<?> rowContent = getCellData(row);
+            List<?> rowContent = getCellData(row, columnStart,
+                    0 > columnEnd ? row.getLastCellNum() - 1 : columnEnd);
 
             /* Check Whether Row Has Data */
             if (!rowContent.isEmpty()) {
@@ -133,12 +170,22 @@ public class POIParser implements IParser {
      * 
      * @param row
      * @return
+     * @throws ParserException
      */
-    private List<?> getCellData(Row row) {
+    private List<?> getCellData(Row row, int columnStart, int columnEnd)
+            throws ParserException {
         List<Cell> columnData = new ArrayList<>();
 
+        /* Check Boundary */
+        if (columnEnd > row.getLastCellNum() - 1) {
+            /* Throw Exception */
+            LOGGER.error("Column End Exceeds Available Data!");
+            throw new ParserException(exceptionFactory.create(
+                    ExceptionType.PARSER, "PAR002"));
+        }
+
         /* Get Columns */
-        for (int columnIndex = 0; columnIndex < row.getLastCellNum(); columnIndex++) {
+        for (int columnIndex = columnStart; columnIndex <= columnEnd; columnIndex++) {
             /* Read Column Data */
             columnData.add(row.getCell(columnIndex));
         }
@@ -168,8 +215,8 @@ public class POIParser implements IParser {
             /* Catch, Log & Throw Exception */
             LOGGER.error("Error Occured While Parsing File!", ex);
             throw new ParserException(exceptionFactory.create(
-                    ExceptionType.PARSER, "M001", ex,
-                    completeFilePath.getAbsolutePath()));
+                    ExceptionType.PARSER, "PAR003",
+                    completeFilePath.getAbsolutePath()), ex);
         }
     }
 }

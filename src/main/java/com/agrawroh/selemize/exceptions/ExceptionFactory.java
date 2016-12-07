@@ -64,24 +64,26 @@ public class ExceptionFactory {
      * @param exceptionCode
      * @param exceptionParams
      */
-    public Throwable create(ExceptionType exceptionType, String exceptionCode,
-            Throwable exception, String... exceptionParams) {
+    public String create(ExceptionType exceptionType, String exceptionCode,
+            String... exceptionParams) {
         /* Create Exception Message */
         String errorString = exceptionTable.get(exceptionCode);
 
         /* Handle Exception Unavailability */
         if (StringUtils.isEmpty(exceptionCode)) {
-            return new Throwable(Constants.ERR_UNKN, exception);
+            return Constants.ERR_UNKN;
         }
 
         /* Create Message */
-        int i = 0;
-        while (errorString.contains(Constants.ERR_CNS)) {
-            errorString = errorString.replaceFirst(Constants.ERR_CNS,
-                    exceptionParams[i++]);
+        if (null != exceptionParams && exceptionParams.length > 0) {
+            int i = 0;
+            while (errorString.contains(Constants.ERR_CNS)) {
+                errorString = errorString.replaceFirst(Constants.ERR_CNS,
+                        exceptionParams[i++]);
+            }
         }
 
         /* Return Exception */
-        return new Throwable(errorString, exception);
+        return errorString;
     }
 }
