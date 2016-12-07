@@ -18,7 +18,7 @@ public interface IParser {
      * @param filePath
      * @param fileName
      * @param sheetName
-     * @return isSuccess
+     * @return List<List<?>>
      * @throws Exception
      */
     List<List<?>> parse(String filePath, String fileName, String sheetName)
@@ -30,9 +30,24 @@ public interface IParser {
      * @param filePath
      * @param fileName
      * @param sheetName
-     * @return isSuccess
+     * @return List<List<?>>
      * @throws Exception
      */
     List<List<?>> parse(File completeFilePath, String sheetName)
             throws ParserException;
+
+    /**
+     * Parse File
+     * 
+     * @param completeFilePath
+     * @param sheetName
+     * @param rowStart
+     * @param columnStart
+     * @param rowEnd
+     * @param columnEnd
+     * @return List<List<?>>
+     * @throws ParserException
+     */
+    List<List<?>> parse(File completeFilePath, String sheetName, int rowStart,
+            int columnStart, int rowEnd, int columnEnd) throws ParserException;
 }
